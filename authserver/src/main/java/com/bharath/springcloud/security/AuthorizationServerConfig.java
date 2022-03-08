@@ -1,7 +1,6 @@
-package com.bharath.springcloud.security.config;
+package com.bharath.springcloud.security;
 
 import java.security.KeyPair;
-import java.security.KeyStore;
 
 import javax.sql.DataSource;
 
@@ -19,8 +18,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
-import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.rsa.crypto.KeyStoreKeyFactory;
@@ -43,20 +40,12 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	@Autowired
 	private DataSource dataSource;
 
-	@Value("${KeyFile}")
-	private String KeyFile;
-
+	@Value("${keyFile}")
+	private String keyFile;
 	@Value("${password}")
 	private String password;
-
 	@Value("${alias}")
 	private String alias;
-
-	@Override
-	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-		clients.inMemory().withClient("couponclientapp").secret(passwordEncoder.encode("9999"))
-				.authorizedGrantTypes("password", "refresh_token").scopes("read", "write").resourceIds(RESOURCE_ID);
-	}
 
 	@Override
 	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
@@ -64,21 +53,46 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 				.authenticationManager(authenticationManager).userDetailsService(userDetailsService);
 	}
 
+	@Override
+	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+		clients.inMemory().withClient("couponclientapp").secret(passwordEncoder.encode("9999"))
+				.authorizedGrantTypes("password", "refresh_token").scopes("read", "write").resourceIds(RESOURCE_ID);
+		;
+	}
+
+	@Override
+	public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+		security.tokenKeyAccess("permitAll()");
+	}
+
 	@Bean
 	public TokenStore tokenStore() {
 		return new JwtTokenStore(jwtAccessTokenConverter());
 	}
-
+	
 	@Bean
 	public JwtAccessTokenConverter jwtAccessTokenConverter() {
-		JwtAccessTokenConverter jwtAccessTokenConveter = new JwtAccessTokenConverter();
-		KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(new ClassPathResource(KeyFile),
-				password.toCharArray());
-		KeyPair keyPair = keyStoreKeyFactory.getKeyPair(alias);
-		jwtAccessTokenConveter.setKeyPair(keyPair);
-
-		return jwtAccessTokenConveter;
+		JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
+		/*
+		 * KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(new
+		 * ClassPathResource(keyFile), password.toCharArray()); KeyPair keyPair =
+		 * keyStoreKeyFactory.getKeyPair(alias);
+		 * jwtAccessTokenConverter.setKeyPair(keyPair);
+		 */
+		jwtAccessTokenConverter.setSigningKey("teskey");
+		return jwtAccessTokenConverter;
 
 	}
+
+	/*
+	 * @Bean public JwtAccessTokenConverter jwtAccessTokenConverter() {
+	 * JwtAccessTokenConverter jwtAccessTokenConverter = new
+	 * JwtAccessTokenConverter(); KeyStoreKeyFactory keyStoreKeyFactory = new
+	 * KeyStoreKeyFactory(new ClassPathResource(keyFile), password.toCharArray());
+	 * KeyPair keyPair = keyStoreKeyFactory.getKeyPair(alias);
+	 * jwtAccessTokenConverter.setKeyPair(keyPair); return jwtAccessTokenConverter;
+	 * 
+	 * }
+	 */
 
 }
