@@ -40,11 +40,11 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	@Autowired
 	private DataSource dataSource;
 
-	@Value("${keyFile}")
+	//@Value("${keyFile}")
 	private String keyFile;
-	@Value("${password}")
+	//@Value("${password}")
 	private String password;
-	@Value("${alias}")
+	//@Value("${alias}")
 	private String alias;
 
 	@Override
@@ -57,7 +57,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
 		clients.inMemory().withClient("couponclientapp").secret(passwordEncoder.encode("9999"))
 				.authorizedGrantTypes("password", "refresh_token").scopes("read", "write").resourceIds(RESOURCE_ID);
-		;
 	}
 
 	@Override
@@ -65,34 +64,17 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 		security.tokenKeyAccess("permitAll()");
 	}
 
+
 	@Bean
 	public TokenStore tokenStore() {
 		return new JwtTokenStore(jwtAccessTokenConverter());
 	}
-	
+
 	@Bean
 	public JwtAccessTokenConverter jwtAccessTokenConverter() {
-		JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
-		/*
-		 * KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(new
-		 * ClassPathResource(keyFile), password.toCharArray()); KeyPair keyPair =
-		 * keyStoreKeyFactory.getKeyPair(alias);
-		 * jwtAccessTokenConverter.setKeyPair(keyPair);
-		 */
-		jwtAccessTokenConverter.setSigningKey("teskey");
+		JwtAccessTokenConverter jwtAccessTokenConverter =new JwtAccessTokenConverter();
+		jwtAccessTokenConverter.setSigningKey("testKey");
 		return jwtAccessTokenConverter;
-
+		
 	}
-
-	/*
-	 * @Bean public JwtAccessTokenConverter jwtAccessTokenConverter() {
-	 * JwtAccessTokenConverter jwtAccessTokenConverter = new
-	 * JwtAccessTokenConverter(); KeyStoreKeyFactory keyStoreKeyFactory = new
-	 * KeyStoreKeyFactory(new ClassPathResource(keyFile), password.toCharArray());
-	 * KeyPair keyPair = keyStoreKeyFactory.getKeyPair(alias);
-	 * jwtAccessTokenConverter.setKeyPair(keyPair); return jwtAccessTokenConverter;
-	 * 
-	 * }
-	 */
-
 }

@@ -1,6 +1,12 @@
 package com.bharath.springcloud.controllers;
 
+import javax.annotation.security.RolesAllowed;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Role;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,13 +27,18 @@ public class CouponRestController {
 	CouponRepo repo;
 
 	@PostMapping("/coupons")
+	//@Secured("ADMIN")
+	@PreAuthorize("hasRole('ADMIN')")
 	public Coupon create(@RequestBody Coupon coupon) {
 
 		return repo.save(coupon);
 
 	}
 
+	
 	@GetMapping("/coupons/{code}")
+	//@PostAuthorize("returnObject.discount>19")
+	@PreAuthorize("hasAnyRole('ADMIN','USER')")
 	public Coupon getCoupon(@PathVariable("code") String code) {
 		return repo.findByCode(code);
 
